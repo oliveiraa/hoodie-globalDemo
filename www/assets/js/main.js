@@ -53,8 +53,10 @@ function Todos($element) {
   }
 
   this.add = function(todo) {
-    collection.push(todo);
-    paint();
+    if(!collection[getTodoItemIndexById(todo.id)]) {
+      collection.push(todo);
+      paint();
+    }
   };
 
   this.update = function(todo) {
@@ -85,6 +87,14 @@ hoodie.store.findAll('todo').then(function(allTodos) {
 hoodie.store.on('add:todo', todos.add);
 hoodie.store.on('update:todo', todos.update);
 hoodie.store.on('remove:todo', todos.remove);
+
+hoodie.remote.on('add:todo', todos.add);
+hoodie.remote.on('update:todo', todos.update);
+hoodie.remote.on('remove:todo', todos.remove);
+
+hoodie.global.on('add:todo', todos.add);
+hoodie.global.on('update:todo', todos.update);
+hoodie.global.on('remove:todo', todos.remove);
 // clear todos when user logs out,
 hoodie.account.on('signout', todos.clear);
 
@@ -94,6 +104,14 @@ $('#todoinput').on('keypress', function(event) {
   // ENTER & non-empty.
   if (event.keyCode === 13 && event.target.value.length) {
     hoodie.store.add('todo', {title: event.target.value});
+    event.target.value = '';
+  }
+});
+
+$('#globalTodoInput').on('keypress', function(event) {
+  // ENTER & non-empty.
+  if (event.keyCode === 13 && event.target.value.length) {
+    hoodie.store.add('todo', {title: event.target.value}).publish();
     event.target.value = '';
   }
 });
